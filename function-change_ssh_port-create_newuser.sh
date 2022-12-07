@@ -5,10 +5,10 @@
 
 function create_new_user {
 	echo "now run Create new user"
-## this application for create new user (tsmart)
+## this application for create new user (test)
 echo "this application for create new user"
-user=tsmart
-# create tsmart user
+user=test
+# create test user
 echo "create user"
 sudo adduser $user
 echo "change usermode"
@@ -17,7 +17,7 @@ echo 'Are you change password automatically or manual?'
 select action in Auto manual exit; do
 case $action in
 	Auto)
-		echo -e "Teby@n\$martP@ssw0rd\nTeby@n\$martP@ssw0rd" | passwd --stdin $user
+		echo -e "test\ntest" | passwd --stdin $user
 		;;
 	manual)
 		passwd tsmart
@@ -38,7 +38,7 @@ function change_ssh_default_port {
 	echo "now run Change ssh default port"
 # Change Default SSH Port in CentOS
 echo 'add new ssh port to ssh config'
-echo "Port 22022" >> /etc/ssh/sshd_config
+echo "Port 2222" >> /etc/ssh/sshd_config
 
 # disable root login
 echo 'disable root ssh login and allow to new user'
@@ -49,13 +49,13 @@ echo "AllowUsers tsmart" >> /etc/ssh/sshd_config
 echo "install selinux"
 yum install -y policycoreutils-python-utils
 echo 'configure selinux for allow new port'
-semanage port -a -t ssh_port_t -p tcp 22022
+semanage port -a -t ssh_port_t -p tcp 2222
 
 # Configure Firewall to Allow Non-Default SSH port:
 echo 'remove ssh service'
 firewall-cmd --permanent --remove-service=ssh
 echo 'add new port to firewall'
-firewall-cmd --permanent --add-port=22022/tcp
+firewall-cmd --permanent --add-port=2222/tcp
 echo 'firewall reload'
 firewall-cmd --reload
 echo 'restart ssh service'

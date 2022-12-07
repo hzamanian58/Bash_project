@@ -33,8 +33,8 @@ sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /
 		  	  cat /etc/resolv.conf
 		  	  # change DNS address to Shekan..
 		  	  echo "changing DNS Address..."
-		  	  #echo -e "nameserver 178.22.122.100\nnameserver 185.51.200.2" > /etc/resolv.conf
-		  	  sudo sed -i 's/nameserver [[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*/nameserver 178.22.122.100/' /etc/resolv.conf
+		  	  #echo -e "nameserver <dns_address>\nnameserver 185.51.200.2" > /etc/resolv.conf
+		  	  sudo sed -i 's/nameserver [[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*/nameserver <dns_address>/' /etc/resolv.conf
 			  cat /etc/resolv.conf
 
 			  # update repository and install Extra Packages for Enterprise Linux

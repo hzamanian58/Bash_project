@@ -11,7 +11,7 @@ then
 	yum install -y policycoreutils-python-utils
 else
 	echo 'configure selinux for allow new port'
-	semanage port -a -t ssh_port_t -p tcp 22022
+	semanage port -a -t ssh_port_t -p tcp 2222
 fi
 }
 
@@ -30,7 +30,7 @@ systemctl restart sshd.service
 
 
 
-new_ssh_port=22022
+new_ssh_port=2222
 
 
 # backup sshd_config
@@ -38,7 +38,7 @@ cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
 
 # Change Default SSH Port in CentOS
 echo 'Change Default SSH Port'
-sed -ie 's/#Port 22/Port 22022/g' /etc/ssh/sshd_config
+sed -ie 's/#Port 22/Port 2222/g' /etc/ssh/sshd_config
 
 # disable root login
 echo 'disable root ssh login and allow to new user'
@@ -69,7 +69,7 @@ then
 	yum install -y policycoreutils-python-utils
 else
 	echo 'configure selinux for allow new port'
-	semanage port -a -t ssh_port_t -p tcp 22022
+	semanage port -a -t ssh_port_t -p tcp 2222
 fi
 exit 0
 }
