@@ -1,0 +1,203 @@
+#!/bin/bash
+## this application for change default SSH port and disable root user to connect from ssh-service
+
+
+user=newuser
+
+function create_new_user {
+	echo "now run Create new user"
+## this application for create new user (newuser)
+echo "this application for create new user"
+#user=newuser
+# create newuser user
+echo "create newuser"
+sudo adduser $user
+echo "change usermode"
+usermod -aG wheel $user
+echo 'Are you change password automatically or manual?'
+select action in Auto manual exit; do
+case $action in
+	Auto)
+		echo -e "P@ssw0rd\nP@ssw0rd" | passwd --stdin $user
+		;;
+	manual)
+		passwd $user
+		;;
+	exit)
+		exit 0
+		;;
+	esac
+	
+done
+
+}
+
+
+
+
+
+function change_ssh_default_port {
+	echo "now run Change ssh default port"
+
+function config_selinux {
+# Configure SELinux to Allow Non-Default SSH Port:
+ which $semange &> /dev/null
+if [[ $? -ne 0 ]]
+then
+	echo "install selinux"
+	yum install -y policycoreutils-python-utils
+else
+	echo 'configure selinux for allow new port'
+	semanage port -a -t ssh_port_t -p tcp 2222
+fi
+}
+
+function config_firewall {
+# Configure Firewall to Allow Non-Default SSH port:
+echo 'remove ssh service'
+firewall-cmd --permanent --remove-service=ssh
+echo 'add new port to firewall'
+firewall-cmd --permanent --add-port=2222/tcp
+echo 'firewall reload'
+firewall-cmd --reload
+echo 'restart ssh service'
+systemctl restart sshd.service
+}
+
+
+new_ssh_port=2222
+
+
+# backup sshd_config
+cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+
+# Change Default SSH Port in CentOS
+echo 'Change Default SSH Port'
+sed -ie 's/#Port 22/Port 2222/g' /etc/ssh/sshd_config
+
+# disable root login
+echo 'disable root ssh login and allow to new user'
+sed -i 's/PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config
+echo "AllowUsers $user" >> /etc/ssh/sshd_config
+
+sshd -t
+if [[ $? -eq 0 ]]; then
+	{
+	config_selinux
+	config_firewall
+}
+else
+	set -e
+	exit 1
+
+fi
+
+}
+
+
+function install_app {
+# this function for install new app on Centos or Ubuntu
+	echo "now run install APP"
+# to recogonize OS distribution (CentOS / Ubuntu)
+
+declare os=$(hostnamectl | grep -iw 'Operating System:' | awk '{print $3}')
+#os="Ubuntu"
+
+
+
+# install package(s) if OSrelease is CentOS
+
+if [[ $os == "CentOS" ]]; then
+	echo "your distribution is $os"
+# decalre varables for testing if update and epel-release is installed or not
+update=0
+epel=0
+
+# resolv Appstream repository
+sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+  for app in $@
+  do
+		  which $app &> /dev/null
+		  if [[ $? -eq 0 ]]
+		  then
+			  echo $app "is installed on your system"
+		  elif [[ $update -eq 0 && $epel -eq 0 ]]
+		  then
+			  # to save current dns (/etc/resolv.conf) to file
+			  egrep "nameserver [0-9]*\." /etc/resolv.conf > currentdns.txt
+		  	  echo "default dns is: " 
+		  	  cat /etc/resolv.conf
+		  	  # change DNS address to Shekan..
+		  	  echo "changing DNS Address..."
+		  	  #echo -e "nameserver 178.22.122.100\nnameserver 185.51.200.2" > /etc/resolv.conf
+		  	  sudo sed -i 's/nameserver [[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*/nameserver 178.22.122.100/' /etc/resolv.conf
+			  cat /etc/resolv.conf
+
+			  # update repository and install Extra Packages for Enterprise Linux
+
+			  sudo dnf -y update
+			  sudo dnf -y install epel-release
+			  update=1
+			  epel=1
+
+			  # install first package
+			  sudo dnf -y install $app
+		  else
+			  # install secend package to end packages
+			  sudo dnf -y install $app
+		  fi
+	  done
+echo "DNS back to default ..."
+
+# to search and replace any ip address that set by nameserver and with blank line
+sed -i 's/nameserver [[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*//' /etc/resolv.conf
+# to append old dns write back to dns setting
+cat currentdns.txt >> /etc/resolv.conf
+echo "dns default ..."
+cat /etc/resolv.conf
+
+
+  
+  # install package(s) if OSrelease is Ubuntu
+elif [[ $os == *"Ubuntu"* ]]
+then
+	echo "you are in $os distribution"
+	for app in $@
+	do
+		which $app
+		if [[ $? -eq 0 ]]
+		then
+			echo $app "is installed on your system"
+		elif [[ $update -eq 0 ]]
+		then
+			sudo app-get -y update
+			sudo apt-get -y install $app
+		else
+			sudo apt-get -y install $app
+		fi
+	done
+else
+	echo "your distribtion is not recogonized"
+fi
+
+}
+
+# selection for which program to run
+select action in create_new_user change_ssh_default_port install_app exit; do
+case $action in
+	"exit")
+		exit 0
+		;;
+	"create_new_user")
+		create_new_user
+		;;
+	"change_ssh_default_port")
+		change_ssh_default_port 
+		;;
+	"install_app")
+		install_app
+		;;
+	esac
+done
