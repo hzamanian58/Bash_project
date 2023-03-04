@@ -87,7 +87,10 @@ function change_ssh_default_port {
 	cp $SSH_CONF_PATH $SSH_CONF_PATH.bak
 	# Change Default SSH Port in CentOS
 	echo 'Change Default SSH Port'
-	sed -ie "s/#Port 22/Port $NEW_SSH_PORT/g" /etc/ssh/sshd_config
+	
+	sed -ie "s/^#Port [0-9]*/Port $NEW_SSH_PORT/g" $SSH_CONF_PATH
+        sed -ie "s/^Port [0-9]*/Port $NEW_SSH_PORT/g" $SSH_CONF_PATH
+
 
 	# disable root login
 	echo -e "disable root login via ssh connection and privilage to $NEW_USER"
