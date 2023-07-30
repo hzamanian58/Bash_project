@@ -1,0 +1,28 @@
+#!/bin/bash
+## This script is used to stop all process and build new project
+
+##  Enter the path of the project files
+PATH_PROJ=/home/hamid/newApp
+
+## Enter the name of the local branch
+L_BRANCH=master
+
+
+## Enter the name of the remote branch
+R_BRANCH=origin
+
+## Enter the Remote Repository
+R_REPO=https://github.com/hzamanian58/hello.js.git
+
+#pm2 stop <name or number of process>
+pm2 stop MyTest
+
+#cd $PATH_PROJ
+cd $PATH_PROJ
+
+#git checkout $L_BRANCH
+git checkout $L_BRANCH
+git remote add $R_BRANCH $R_REPO
+git pull $R_BRANCH $L_BRANCH
+npm i
+pm2 start MyTest
